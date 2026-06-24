@@ -1,7 +1,8 @@
 {
   "name": "Flow Planner",
   "short_name": "Flow",
-  "start_url": "./",
+  "start_url": "/flow-planner/",
+  "scope": "/flow-planner/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
