@@ -515,6 +515,16 @@
   .review-row .rl { color: var(--text-dim); }
   .review-row .rv { font-weight: 600; }
 
+  /* ============ Profile Screen ============ */
+  .profile-page { padding: 14px 14px 0; }
+  .profile-section { margin-bottom: 20px; }
+  .profile-section:last-child { margin-bottom: 0; }
+  .profile-section h3 { margin: 0 0 8px; font-size: 13px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+  .profile-card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+  .profile-card p { margin: 0 0 6px; font-size: 14px; color: var(--text); }
+  .profile-card p:last-child { margin-bottom: 0; }
+  .profile-version { color: var(--text-faint) !important; font-size: 12px !important; }
+
   /* ============ Empty / misc ============ */
   .empty-state { text-align: center; padding: 20px 10px; color: var(--text-faint); font-size: 13px; }
   .zoom-hint {
@@ -585,3 +595,85 @@
 
   /* Screen section header */
   .screen-title { font-size: 22px; font-weight: 700; padding: 14px 14px 0; }
+
+  /* ============================================================================
+   * Sprint 4 — Cloud Sync UI
+   * ========================================================================== */
+
+  /* ---- Header sync indicator ---- */
+  .sync-indicator {
+    position: relative;
+  }
+  .sync-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    background: var(--text-faint);
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.04);
+    transition: background 0.2s, transform 0.2s;
+  }
+  .sync-dot.idle        { background: var(--goal-green); }
+  .sync-dot.syncing     { background: var(--accent); animation: syncPulse 1s infinite ease-in-out; }
+  .sync-dot.error       { background: var(--p-iu); }
+  .sync-dot.offline     { background: var(--p-inu); }
+  .sync-dot.signed-out  { background: var(--text-faint); }
+  @keyframes syncPulse {
+    0%, 100% { transform: scale(1);   opacity: 1;   }
+    50%      { transform: scale(1.5); opacity: 0.6; }
+  }
+
+  /* ---- Account / Sync card (Profile screen) ---- */
+  .sync-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .sync-card-row {
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .sync-card-row .sync-dot { margin-top: 6px; flex-shrink: 0; }
+  .sync-card-text { min-width: 0; flex: 1; }
+  .sync-card-title { font-weight: 600; font-size: 15px; }
+  .sync-card-sub   { font-size: 12px; color: var(--text-dim); margin-top: 2px; word-break: break-word; }
+  .sync-card-actions {
+    display: flex; gap: 8px; margin-top: 12px;
+  }
+  .sync-card-actions .btn { flex: 1; }
+
+  /* ---- Auth modal ---- */
+  .auth-tabs {
+    display: flex;
+    background: var(--bg-elev-2);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    margin-bottom: 14px;
+  }
+  .auth-tab {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .auth-tab.active {
+    background: var(--bg-elev);
+    color: var(--text);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+  .auth-message {
+    min-height: 20px;
+    font-size: 13px;
+    margin: 4px 0 10px;
+    color: var(--text-dim);
+  }
+  .auth-message.error   { color: var(--p-iu); }
+  .auth-message.success { color: var(--goal-green); }
+  .auth-foot {
+    margin-top: 10px;
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 11px;
+  }

@@ -17,6 +17,7 @@
 
   function ensureStateShape(state) {
     if (!state.notes) state.notes = {};
+    if (!state.notesMeta) state.notesMeta = {};   // Sprint 4: per-note updatedAt for merging
     if (!state.tasks) state.tasks = [];
     if (!state.events) state.events = [];
     if (!state.goals) state.goals = [];
@@ -30,6 +31,10 @@
     try {
       localStorage.setItem(getConstants().STORAGE_KEY, JSON.stringify(getState()));
     } catch (e) {}
+    /* Sprint 4.3: notify the sync engine so it can debounce-push to the cloud. */
+    if (FlowPlanner.events && FlowPlanner.events.emit) {
+      FlowPlanner.events.emit('state:saved', null);
+    }
   }
 
   function load() {

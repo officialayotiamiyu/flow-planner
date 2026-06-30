@@ -1,11 +1,20 @@
 /* Flow Planner — Service Worker
-   v2.2 (cache bumped after modular refactor) */
-const CACHE_NAME = 'flow-planner-v2-2';
+   v2.3 (Sprint 4 — cloud sync) */
+const CACHE_NAME = 'flow-planner-v2-3';
 
 const PRECACHE = [
   './',
   './index.html',
   './style.css',
+  './js/events.js',
+  './js/utils.js',
+  './js/storage.js',
+  './js/planner.js',
+  './js/calendar.js',
+  './js/render.js',
+  './js/modals.js',
+  './js/auth.js',
+  './js/sync.js',
   './js/app.js',
   './supabase.js',
   './manifest.json'

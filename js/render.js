@@ -52,6 +52,7 @@
       else renderDay();
     } else if (currentScreen === 'goals') renderGoals();
     else if (currentScreen === 'reviews') renderReviews();
+    else if (currentScreen === 'profile') renderProfile();
   }
 
   function updateHeader() {
@@ -73,6 +74,9 @@
     } else if (ui.currentScreen === 'reviews') {
       scope.textContent = 'Reviews';
       sub.textContent = 'Progress over time';
+    } else if (ui.currentScreen === 'profile') {
+      scope.textContent = 'Profile';
+      sub.textContent = 'Account, sync & backup';
     } else if (ui.currentScreen === 'calendar') {
       if (currentCalView === 'month') {
         scope.textContent = `${MONTHS[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
@@ -102,7 +106,7 @@
       b.classList.toggle('active', b.dataset.screen === ui.currentScreen);
     });
     document.body.className = 'screen-' + ui.currentScreen;
-    $('fab').classList.toggle('fab-hidden', ui.currentScreen === 'goals' || ui.currentScreen === 'reviews');
+    $('fab').classList.toggle('fab-hidden', ui.currentScreen === 'goals' || ui.currentScreen === 'reviews' || ui.currentScreen === 'profile');
   }
 
   function setScreen(screen) {
@@ -199,8 +203,15 @@
     if (ta) {
       ta.addEventListener('input', getUtils().debounce(function () {
         const v = ta.value;
-        if (v && v.trim()) getState().notes[ds] = v;
-        else delete getState().notes[ds];
+        const st = getState();
+        if (!st.notesMeta) st.notesMeta = {};
+        if (v && v.trim()) {
+          st.notes[ds] = v;
+          st.notesMeta[ds] = { updatedAt: new Date().toISOString() };
+        } else {
+          delete st.notes[ds];
+          st.notesMeta[ds] = { updatedAt: new Date().toISOString(), deleted: true };
+        }
         getStorage().save();
       }, 300));
     }
@@ -383,8 +394,15 @@
     if (ta) {
       ta.addEventListener('input', getUtils().debounce(function () {
         const v = ta.value;
-        if (v && v.trim()) getState().notes[ds] = v;
-        else delete getState().notes[ds];
+        const st = getState();
+        if (!st.notesMeta) st.notesMeta = {};
+        if (v && v.trim()) {
+          st.notes[ds] = v;
+          st.notesMeta[ds] = { updatedAt: new Date().toISOString() };
+        } else {
+          delete st.notes[ds];
+          st.notesMeta[ds] = { updatedAt: new Date().toISOString(), deleted: true };
+        }
         getStorage().save();
       }, 300));
     }
@@ -557,31 +575,7 @@
       </div>`;
     }
 
-    html += `
-    <div style="margin-top:20px;">
-      <h3>Backup & Restore</h3>
-
-      <button class="btn btn-secondary"
-              onclick="exportBackup()"
-              style="width:100%;margin-bottom:10px;">
-        Export Backup
-      </button>
-
-      <button class="btn btn-secondary"
-              onclick="document.getElementById('backupImport').click()"
-              style="width:100%;">
-        Import Backup
-      </button>
-
-      <input
-        type="file"
-        id="backupImport"
-        accept=".json"
-        onchange="importBackup(event)"
-        style="display:none;"
-      >
-    </div>
-  </div>`;
+    html += `</div>`;
 
     root.innerHTML = html;
     root.querySelectorAll('.rtab').forEach(function (b) {
@@ -589,6 +583,113 @@
         getUi().reviewType = b.dataset.rtype;
         renderReviews();
       });
+    });
+  }
+
+  /* ----------------------------------------------------------------------
+   * Profile screen — Account, Cloud Sync, Backup & Restore, Settings, About
+   * -------------------------------------------------------------------- */
+  function renderProfile() {
+    const root = $('screen-profile');
+    if (!root) return;
+
+    const syncStatus = (FlowPlanner.sync && FlowPlanner.sync.getStatus && FlowPlanner.sync.getStatus()) || { state: 'signed-out' };
+    const cachedUserId = FlowPlanner.auth && FlowPlanner.auth.getCurrentUserId && FlowPlanner.auth.getCurrentUserId();
+    const signedIn = !!cachedUserId;
+    const lastSyncLabel = syncStatus.lastSyncedAt
+      ? new Date(syncStatus.lastSyncedAt).toLocaleString()
+      : 'never';
+
+    let html = `<div class="profile-page">`;
+
+    html += `
+    <div class="profile-section">
+      <h3>Account &amp; Cloud Sync</h3>
+      <div class="sync-card">
+        <div class="sync-card-row">
+          <span class="sync-dot ${syncStatus.state}"></span>
+          <div class="sync-card-text">
+            <div class="sync-card-title" id="syncCardTitle">${signedIn ? 'Signed in' : 'Not signed in'}</div>
+            <div class="sync-card-sub" id="syncCardSub">${signedIn
+              ? 'Last sync: ' + lastSyncLabel + (syncStatus.message ? ' • ' + getUtils().escapeHtml(syncStatus.message) : '')
+              : 'Sign in to keep your planner in sync across devices.'
+            }</div>
+          </div>
+        </div>
+        <div class="sync-card-actions">
+          ${signedIn
+            ? `<button class="btn btn-secondary" id="syncNowBtn">Sync Now</button>
+               <button class="btn btn-secondary" id="logoutBtn">Log out</button>`
+            : `<button class="btn btn-primary" id="signInBtn" style="width:100%;">Sign in / Create account</button>`}
+        </div>
+      </div>
+    </div>`;
+
+    html += `
+    <div class="profile-section">
+      <h3>Backup &amp; Restore</h3>
+      <div class="profile-card">
+        <button class="btn btn-secondary"
+                onclick="exportBackup()"
+                style="width:100%;margin-bottom:10px;">
+          Export Backup
+        </button>
+        <button class="btn btn-secondary"
+                onclick="document.getElementById('backupImport').click()"
+                style="width:100%;">
+          Import Backup
+        </button>
+        <input
+          type="file"
+          id="backupImport"
+          accept=".json"
+          onchange="importBackup(event)"
+          style="display:none;"
+        >
+      </div>
+    </div>`;
+
+    html += `
+    <div class="profile-section">
+      <h3>Settings</h3>
+      <div class="profile-card">
+        <p>Settings will appear here in a future update.</p>
+      </div>
+    </div>`;
+
+    html += `
+    <div class="profile-section">
+      <h3>About</h3>
+      <div class="profile-card">
+        <p>FLOW Planner</p>
+        <p class="profile-version">Version ${getUtils().escapeHtml(FlowPlanner.version || '')}</p>
+      </div>
+    </div>`;
+
+    html += `</div>`;
+
+    root.innerHTML = html;
+
+    const signInBtn = document.getElementById('signInBtn');
+    if (signInBtn) signInBtn.addEventListener('click', function () {
+      FlowPlanner.auth.openModal('signin');
+    });
+    const syncNowBtn = document.getElementById('syncNowBtn');
+    if (syncNowBtn) syncNowBtn.addEventListener('click', async function () {
+      syncNowBtn.disabled = true;
+      syncNowBtn.textContent = 'Syncing…';
+      try { await FlowPlanner.sync.pushNow(); }
+      finally {
+        syncNowBtn.disabled = false;
+        syncNowBtn.textContent = 'Sync Now';
+        renderProfile();
+      }
+    });
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) logoutBtn.addEventListener('click', async function () {
+      if (!confirm('Log out? Your local data will remain on this device.')) return;
+      await FlowPlanner.auth.signOut();
+      renderProfile();
     });
   }
 
@@ -800,6 +901,7 @@
     renderDay,
     renderGoals,
     renderReviews,
+    renderProfile,
     attachTaskListEvents,
     attachEventListEvents,
     attachDragReorder,

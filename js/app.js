@@ -175,6 +175,7 @@
       else if (e.key === '2') setScreen('calendar');
       else if (e.key === '3') setScreen('goals');
       else if (e.key === '4') setScreen('reviews');
+      else if (e.key === '5') setScreen('profile');
       else if (e.key === 'n' || e.key === 'N') FlowPlanner.modals.openTaskModal(null, FlowPlanner.utils.ymd(calendar.getCurrentDate()));
       else if (e.key === 'e' || e.key === 'E') FlowPlanner.modals.openEventModal(null, FlowPlanner.utils.ymd(calendar.getCurrentDate()));
     });
@@ -253,12 +254,46 @@
     attachKeyboard();
   }
 
+  function updateSyncIndicator(status) {
+    const dot = document.getElementById('syncIndicatorDot');
+    if (!dot) return;
+    dot.className = 'sync-dot ' + (status && status.state ? status.state : 'signed-out');
+    const btn = document.getElementById('syncIndicatorBtn');
+    if (btn) {
+      const last = status && status.lastSyncedAt ? new Date(status.lastSyncedAt).toLocaleString() : 'never';
+      btn.title = status && status.state === 'signed-out'
+        ? 'Not signed in — tap to sign in'
+        : 'Sync: ' + (status.state || 'idle') + ' • last: ' + last;
+    }
+  }
+
   function init() {
     FlowPlanner.storage.load();
     FlowPlanner.storage.runCarryForward();
     bind();
     FlowPlanner.storage.seedIfEmpty();
     render();
+
+    /* ---------- Sprint 4 cloud sync init ---------- */
+    if (FlowPlanner.sync && FlowPlanner.sync.init) FlowPlanner.sync.init();
+    if (FlowPlanner.auth && FlowPlanner.auth.attachListener) FlowPlanner.auth.attachListener();
+
+    /* Header indicator wiring */
+    const indicator = document.getElementById('syncIndicatorBtn');
+    if (indicator) {
+      indicator.addEventListener('click', function () {
+        const uid = FlowPlanner.auth && FlowPlanner.auth.getCurrentUserId && FlowPlanner.auth.getCurrentUserId();
+        if (!uid) FlowPlanner.auth.openModal('signin');
+        else FlowPlanner.sync.pushNow();
+      });
+    }
+    FlowPlanner.events.on('sync:status', updateSyncIndicator);
+    FlowPlanner.events.on('auth:change', function (info) {
+      updateSyncIndicator({ state: info.user ? 'idle' : 'signed-out' });
+      /* Re-render profile screen if user toggled auth there. */
+      if (FlowPlanner.ui.currentScreen === 'profile') FlowPlanner.rendering.renderProfile();
+    });
+    updateSyncIndicator(FlowPlanner.sync && FlowPlanner.sync.getStatus ? FlowPlanner.sync.getStatus() : { state: 'signed-out' });
   }
 
   FlowPlanner.init = init;

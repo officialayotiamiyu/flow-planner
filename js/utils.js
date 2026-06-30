@@ -8,7 +8,7 @@
   FlowPlanner.constants = FlowPlanner.constants || {
     STORAGE_KEY: 'flow_app_v2',
     CAL_VIEWS: ['month', 'week', 'three', 'day'],
-    SCREENS: ['today', 'calendar', 'goals', 'reviews'],
+    SCREENS: ['today', 'calendar', 'goals', 'reviews', 'profile'],
     PRIORITIES: {
       iu: { label: 'Important & Urgent', short: 'I&U' },
       inu: { label: 'Important, Not Urgent', short: 'I' },

@@ -15,6 +15,9 @@
     return FlowPlanner.storage;
   }
 
+  /* Sprint 4: per-item timestamp for merging on multi-device sync. */
+  function stamp() { return new Date().toISOString(); }
+
   function tasksForDate(ds) {
     const state = getState();
     const today = getUtils().todayStr();
@@ -110,6 +113,7 @@
       const d = ref.instanceDate;
       if (parent.recurrence.completions[d]) delete parent.recurrence.completions[d];
       else parent.recurrence.completions[d] = true;
+      parent.updatedAt = stamp();
     } else {
       const t = state.tasks.find(function (x) {
         return x.id === ref.id;
@@ -118,6 +122,7 @@
       t.done = !t.done;
       t.completedOn = t.done ? getUtils().todayStr() : null;
       if (t.done && t.due && t.due < getUtils().todayStr()) t.due = getUtils().todayStr();
+      t.updatedAt = stamp();
     }
 
     getStorage().save();
@@ -186,6 +191,7 @@
         if (recurrence.type !== 'none' && oldComp && t.recurrence.type === recType) {
           t.recurrence.completions = oldComp;
         }
+        t.updatedAt = stamp();
       }
     } else {
       const maxOrder = state.tasks.reduce(function (m, t) {
@@ -200,6 +206,7 @@
         done: false,
         completedOn: null,
         createdAt: getUtils().todayStr(),
+        updatedAt: stamp(),
         recurrence,
         order: maxOrder + 1,
         goalId
@@ -233,6 +240,7 @@
         e.date = date;
         e.startTime = startTime;
         e.endTime = endTime;
+        e.updatedAt = stamp();
       }
     } else {
       state.events.push({
@@ -242,7 +250,8 @@
         date,
         startTime,
         endTime,
-        createdAt: getUtils().todayStr()
+        createdAt: getUtils().todayStr(),
+        updatedAt: stamp()
       });
     }
 
@@ -269,6 +278,7 @@
         g.title = title;
         g.desc = desc;
         g.targetDate = targetDate;
+        g.updatedAt = stamp();
       }
     } else {
       state.goals.push({
@@ -277,7 +287,8 @@
         desc,
         targetDate,
         status: 'active',
-        createdAt: getUtils().todayStr()
+        createdAt: getUtils().todayStr(),
+        updatedAt: stamp()
       });
     }
 
@@ -299,6 +310,7 @@
     const g = getGoalById(goalId);
     if (!g) return;
     g.status = g.status === 'active' ? 'completed' : 'active';
+    g.updatedAt = stamp();
     getStorage().save();
   }
 
@@ -315,7 +327,7 @@
             return x.id === ref.id;
           });
 
-      if (task) task.order = i++;
+      if (task) { task.order = i++; task.updatedAt = stamp(); }
     });
 
     getStorage().save();
